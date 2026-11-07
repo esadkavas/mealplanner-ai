@@ -1,5 +1,6 @@
 @startuml
 !include style.iuml
+left to right direction
 title CD02 (Stage 2) Agent and AI integration
 legend bottom
   Adapter: LLMClient (target) <- GeminiAdapter (adapter) -> Gemini REST API (adaptee).

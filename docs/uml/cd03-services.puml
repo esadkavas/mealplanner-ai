@@ -1,5 +1,6 @@
 @startuml
 !include style.iuml
+left to right direction
 title CD03 (Stage 2) Services and plan construction
 legend bottom
   Builder: PlanService (director) -> MealPlanBuilder (builder) -> MealPlan (product).
