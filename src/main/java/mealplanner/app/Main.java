@@ -4,12 +4,17 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.awt.GraphicsEnvironment;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import mealplanner.llm.ConnectionCheck;
 import mealplanner.llm.GeminiAdapter;
 import mealplanner.llm.LoggingLLMClient;
 import mealplanner.persistence.StorageException;
 import mealplanner.ui.cli.PlannerCLI;
+import mealplanner.ui.gui.PlannerGUI;
 
 /**
  * Entry point.
@@ -74,8 +79,18 @@ public final class Main {
     }
 
     private static void runGui(AppConfig config) {
-        System.err.println("The desktop GUI is not part of this build yet. Use 'cli' or 'llm-check'.");
-        System.exit(1);
+        if (GraphicsEnvironment.isHeadless()) {
+            System.err.println("No graphical display is available. Use 'cli' instead.");
+            System.exit(1);
+        }
+        try {
+            AppContext context = AppContext.start(config);
+            Runtime.getRuntime().addShutdownHook(new Thread(context::close));
+            SwingUtilities.invokeLater(() -> new PlannerGUI(context).show());
+        } catch (StorageException e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "MealPlanner cannot start", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
     }
 
     private static int runCheck(AppConfig config) {
