@@ -1,0 +1,92 @@
+@startuml
+!include style.iuml
+title CD04 (Stage 2) Domain ownership and multiplicities
+
+class AppState {
+  - revision: long
+  - pantry: Map<String, BigDecimal>
+  + deepCopy(): AppState
+}
+class PreferenceProfile <<record>> {
+  diet: Diet
+  excludedIds: Set<String>
+  householdServings: int
+  maxMinutes: int
+}
+class MealPlan {
+  - id: UUID
+  - startDate: LocalDate
+  - days: int
+  - slots: Set<MealSlot>
+  - noRepeat: boolean
+  - derivedFrom: UUID
+  - explanation: String
+  + deepCopy(): MealPlan
+}
+class MealEntry {
+  - day: int
+  - slot: MealSlot
+  - servings: int
+  + deepCopy(): MealEntry
+}
+class Recipe {
+  - id: UUID
+  - title: String
+  - servings: int
+  - minutes: int
+  - steps: List<String>
+  - derivedFrom: UUID
+  - note: String
+  + deepCopy(): Recipe
+}
+class IngredientAmount <<record>> {
+  ingredientId: String
+  quantity: BigDecimal
+}
+class Ingredient <<record>> {
+  id: String
+  name: String
+  unit: Unit
+  dietTags: Set<Diet>
+}
+class Catalogue {
+  + find(id): Optional<Ingredient>
+  + all(): Collection<Ingredient>
+}
+class PlanRequest <<record>> {
+  startDate: LocalDate
+  days: int
+  slots: Set<MealSlot>
+  servings: int
+  noRepeat: boolean
+}
+enum Unit {
+  GRAM
+  MILLILITRE
+  COUNT
+}
+enum Diet {
+  UNRESTRICTED
+  VEGETARIAN
+  VEGAN
+}
+enum MealSlot {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+AppState "1" *-- "1" PreferenceProfile
+AppState "1" *-- "0..*" Recipe : stored recipes
+AppState "1" *-- "0..*" MealPlan
+MealPlan "1" *-- "1..21" MealEntry
+MealEntry "0..1" *-- "1" Recipe : recipeSnapshot
+Recipe "1" *-- "1..*" IngredientAmount
+IngredientAmount "0..*" --> "1" Ingredient : by ID
+Catalogue "1" o-- "*" Ingredient
+Ingredient --> Unit
+Ingredient --> Diet
+PreferenceProfile --> Diet
+MealEntry --> MealSlot
+PlanRequest ..> MealSlot
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+!include style.iuml
+title SD09 (Stage 2) Provider calls through the decorator and adapter
+participant "agent:\nAgentCoordinator" as A
+participant "LoggingLLMClient\n(Decorator)" as L
+participant "GeminiAdapter\n(Adapter)" as G
+participant "Gemini API" as API
+
+A -> L : nextStep(context)
+L -> L : start timer
+L -> G : nextStep(context)
+G -> G : build contents: task prompt + replayed model turns\n(raw content incl. thoughtSignature) + functionResponse parts
+G -> API : POST models/gemini-3.5-flash-lite:generateContent\nheader x-goog-api-key; tools.functionDeclarations; timeout <= 15 s
+alt HTTP 200
+  API --> G : candidates[0].content.parts + usageMetadata
+  G --> L : ToolStep / FinalReady / Invalid (providerState = raw content)
+  L -> L : log task, call, ms, outcome, tokens (no prompt, no key)
+  L --> A : same AgentStep
+else HTTP error / timeout / bad JSON
+  API --> G : 400 / 401 / 403 / 404 / 429 / 5xx
+  G --> L : LLMException(AUTH | MODEL_NOT_FOUND | RATE_LIMITED | TIMEOUT | ...)
+  L -> L : log ERROR(kind)
+  L --> A : same LLMException (rethrown)
+end
+== final answer ==
+A -> L : finish(context, schema)
+L -> G : finish(context, schema)
+G -> API : POST generateContent: one user message with the full tool transcript,\nresponseMimeType = application/json, responseSchema, no tools
+API --> G : JSON text
+G --> L : AgentDraft(json, usage) or LLMException(FORMAT)
+L --> A : AgentDraft
+@enduml

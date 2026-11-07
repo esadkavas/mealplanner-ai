@@ -1,0 +1,12 @@
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam class {
+  BackgroundColor #F7F9FB
+  BorderColor #33414E
+  ArrowColor #33414E
+  BackgroundColor<<new in Stage 2>> #FFF6E0
+}
+skinparam stereotypeCBackgroundColor #DDE6EE
+hide empty members

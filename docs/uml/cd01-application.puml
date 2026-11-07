@@ -1,0 +1,128 @@
+@startuml
+!include style.iuml
+title CD01 (Stage 2) Interfaces, facade and persistence
+legend bottom
+  Classes marked <<new in Stage 2>> were added during implementation.
+  Facade: PlannerFacade.  Prototype: AppState.deepCopy().
+endlegend
+
+class PlannerGUI {
+  - facade: PlannerFacade
+  - llm: LoggingLLMClient
+  + show(): void
+  ~ submit(busyText, action: Supplier<Result<T>>, display: Consumer<Result<T>>): void
+  ~ preview(result: Result<Proposal>): void
+}
+class "PreferencesPanel\nPantryPanel\nRecipesPanel\nRecipeFormDialog\nRecommendPanel\nPlansPanel" as Panels <<new in Stage 2>>
+class PlannerCLI {
+  - facade: PlannerFacade
+  - pending: Proposal
+  + run(in, out): void
+  + execute(line: String): boolean
+}
+class TextFormat <<new in Stage 2>> {
+  + proposal(state, proposal, catalogue): String
+  + plan(state, plan): String
+  + recommendations(list, catalogue): String
+  + shopping(state, list): String
+}
+class PlannerFacade {
+  - state: AppState
+  - store: StateStore
+  - mutationLock: ReentrantLock
+  + updateProfile(input: ProfileInput): Result<PreferenceProfile>
+  + updatePantry(input: PantryInput): Result<Map>
+  + previewRecipe(doc: RecipeDocument): Result<Proposal>
+  + previewRecipeFile(path: Path): Result<Proposal>
+  + search(filter: SearchFilter): Result<List<Recipe>>
+  + recommend(request: String): Result<RecommendationList>
+  + createPlan(request: PlanRequest, wishes: String): Result<Proposal>
+  + revisePlan(planRef: String, request: String): Result<Proposal>
+  + substitute(recipeRef, ingredientId, request): Result<Proposal>
+  + scale(recipeRef: String, servings: int): Result<Proposal>
+  + shopping(planRef: String): Result<ShoppingList>
+  + accept(proposal: Proposal): Result<String>
+  + reject(proposal: Proposal): Result<String>
+  + snapshot(): AppState
+}
+class Result<T> {
+  - success: boolean
+  - data: T
+  - errors: List<String>
+  - details: List<String>
+}
+class Proposal {
+  - kind: ProposalKind
+  - baseRevision: long
+  - candidate: AppState
+  - explanation: String
+  - warnings: List<String>
+  - agentTrace: List<String>
+  - consumed: boolean
+  + isCurrent(revision: long): boolean
+  + validate(state: AppState): ValidationResult
+}
+enum ProposalKind {
+  IMPORT_RECIPE
+  SCALE_RECIPE
+  SUBSTITUTE_RECIPE
+  PLAN
+}
+interface StateStore {
+  + load(): Optional<AppState>
+  + save(state: AppState): void
+}
+class JsonStateStore {
+  - filePath: Path
+  + load(): Optional<AppState>
+  + save(state: AppState): void
+}
+class DataDirectoryLock <<new in Stage 2>> {
+  + {static} acquire(dir: Path): DataDirectoryLock
+  + close(): void
+}
+class AppContext <<new in Stage 2>> {
+  + {static} start(config: AppConfig): AppContext
+  + facade(): PlannerFacade
+}
+class AppConfig <<new in Stage 2>> {
+  geminiApiKey (from .env, hidden)
+  geminiModel, timeouts, dataDir
+  + {static} load(dir, env): AppConfig
+  + aiProblem(): String
+}
+class Main <<new in Stage 2>> {
+  + {static} main(args): void
+}
+class AppState {
+  - revision: long
+  - profile: PreferenceProfile
+  - pantry: Map<String, BigDecimal>
+  - recipes: Map<UUID, Recipe>
+  - plans: Map<UUID, MealPlan>
+  + deepCopy(): AppState
+  + recipeAlias(id): String
+  + findRecipe(ref): Optional<Recipe>
+}
+
+PlannerGUI *-- Panels
+PlannerGUI ..> PlannerFacade : calls via submit()
+Panels ..> PlannerFacade : calls
+PlannerCLI ..> PlannerFacade : calls
+PlannerGUI ..> TextFormat
+PlannerCLI ..> TextFormat
+PlannerFacade ..> Result : returns
+PlannerFacade ..> Proposal : creates / accepts
+Proposal --> "1 candidate" AppState
+Proposal --> ProposalKind
+PlannerFacade --> "1 state" AppState
+PlannerFacade --> StateStore
+JsonStateStore ..|> StateStore
+Main ..> AppContext
+Main ..> PlannerGUI
+Main ..> PlannerCLI
+AppContext ..> AppConfig
+AppContext --> DataDirectoryLock
+AppContext ..> JsonStateStore : creates
+AppContext --> PlannerFacade : creates and injects
+@enduml

@@ -1,0 +1,122 @@
+@startuml
+!include style.iuml
+title CD02 (Stage 2) Agent and AI integration
+legend bottom
+  Adapter: LLMClient (target) <- GeminiAdapter (adapter) -> Gemini REST API (adaptee).
+  Decorator: LoggingLLMClient wraps one LLMClient.  <<new in Stage 2>> = added during implementation.
+endlegend
+
+class AgentCoordinator {
+  - model: LLMClient
+  - tools: ToolRegistry
+  - totalTimeout: Duration = 90 s
+  + {static} MAX_NEXT_STEPS = 5
+  + run(task, taskPrompt, scope: ToolScope, outputSchema): AgentRun
+}
+interface LLMClient {
+  + nextStep(context: AgentContext): AgentStep
+  + finish(context: AgentContext, schema: JsonNode): AgentDraft
+  + describe(): String
+}
+class GeminiAdapter {
+  - apiKey: String
+  - modelId: String
+  - callTimeout: Duration = 15 s
+  + nextStep(context): AgentStep
+  + finish(context, schema): AgentDraft
+  - post(body, context): JsonNode
+  - httpError(status, body): LLMException
+}
+class LoggingLLMClient {
+  - wrapped: LLMClient
+  - logFile: Path
+  + nextStep(context): AgentStep
+  + finish(context, schema): AgentDraft
+  + usage(): UsageSummary
+}
+class "Gemini API\nmodels/{model}:generateContent" as Gemini <<external>>
+class ToolRegistry {
+  - specs: Map<String, ToolSpec>
+  - allowedNames: Map<TaskType, List<String>>
+  + specsFor(task): List<ToolSpec>
+  + execute(call: ToolCall, scope: ToolScope): ToolResult
+}
+class ToolScope <<new in Stage 2>> {
+  - snapshot: AppState
+  - planRequest: PlanRequest
+  - sourcePlan: MealPlan
+  - retrievedRecipeIds: Set<UUID>
+  - retrievedIngredientIds: Set<String>
+}
+class AgentContext {
+  - taskType: TaskType
+  - systemPrompt, taskPrompt: String
+  - tools: List<ToolSpec>
+  - transcript: List<Message>
+  - deadline: Instant
+}
+interface AgentStep <<sealed>> {
+  usage(): TokenUsage
+  providerState(): String
+}
+class ToolStep
+class FinalReady
+class Invalid <<new in Stage 2>>
+class AgentDraft {
+  json: JsonNode
+  usage: TokenUsage
+}
+class AgentRun <<new in Stage 2>> {
+  draft: JsonNode
+  retrievedRecipeIds, retrievedIngredientIds
+  trace: List<String>
+  usage: TokenUsage
+}
+class ToolResult {
+  success: boolean
+  data: JsonNode
+  errors: List<String>
+  retrievedRecipeIds / retrievedIngredientIds
+}
+class AgentPrompts <<new in Stage 2>> {
+  + SYSTEM
+  + recommend(..) / plan(..) / revise(..) / substitute(..)
+  + recommendSchema() / planSchema() / reviseSchema() / substituteSchema()
+}
+class Drafts <<new in Stage 2>> {
+  + status(run, schema): Status
+  + recommendation(run): RecommendationDraft
+  + planEntries(run, field): PlanDraft
+  + substitution(run, ingredientId): SubstitutionDraft
+}
+class ConnectionCheck <<new in Stage 2>> {
+  + {static} run(client, timeout): Report
+}
+enum TaskType {
+  RECOMMEND
+  PLAN
+  REVISE
+  SUBSTITUTE
+  CONNECTION_CHECK
+}
+
+AgentCoordinator ..> LLMClient : uses
+AgentCoordinator --> "1" ToolRegistry
+AgentCoordinator ..> AgentContext : builds
+AgentCoordinator ..> AgentRun : returns
+AgentCoordinator ..> AgentPrompts
+GeminiAdapter ..|> LLMClient
+LoggingLLMClient ..|> LLMClient
+LoggingLLMClient o--> "wraps 1" LLMClient
+GeminiAdapter ..> Gemini : HTTPS (x-goog-api-key header)
+ToolRegistry ..> ToolScope : reads snapshot
+ToolRegistry ..> ToolResult : returns
+ToolStep ..|> AgentStep
+FinalReady ..|> AgentStep
+Invalid ..|> AgentStep
+LLMClient ..> AgentStep
+LLMClient ..> AgentDraft
+AgentContext --> TaskType
+ConnectionCheck ..> LLMClient
+Drafts ..> AgentRun
+@enduml

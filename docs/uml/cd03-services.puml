@@ -1,0 +1,81 @@
+@startuml
+!include style.iuml
+title CD03 (Stage 2) Services and plan construction
+legend bottom
+  Builder: PlanService (director) -> MealPlanBuilder (builder) -> MealPlan (product).
+  Prototype: Recipe.deepCopy() / MealPlan.deepCopy() used by RecipeService and PlanService.
+endlegend
+
+class ConstraintValidator {
+  - catalogue: Catalogue
+  + profile(input: ProfileInput): ValidationResult
+  + pantry(input: PantryInput): ValidationResult
+  + recipe(recipe, profile): ValidationResult
+  + eligibility(recipe, profile): ValidationResult
+  + plan(plan, profile): ValidationResult
+}
+class ValidationResult {
+  - structuralErrors: List<String>
+  - eligibilityViolations: List<String>
+  + isStructurallyValid(): boolean
+  + isEligible(): boolean
+}
+class RecipeService {
+  - validator: ConstraintValidator
+  + parse(json: String): Recipe
+  + fromDocument(doc: RecipeDocument): Recipe
+  + search(state, filter: SearchFilter): List<Recipe>
+  + shortages(recipe, state): List<Shortage>
+  + recommendations(draft: RecommendationDraft, state): RecommendationList
+  + scale(recipe, servings, profile): Recipe
+  + substitute(recipe, draft: SubstitutionDraft, profile): Recipe
+}
+class PlanService {
+  - validator: ConstraintValidator
+  + validateRequest(request): ValidationResult
+  + checkFeasible(state, request): void
+  + fromDraft(draft: PlanDraft, state, request: PlanRequest): MealPlan
+  + revise(plan, draft: PlanDraft, state): MealPlan
+  + validate(plan, profile): ValidationResult
+  + diff(before, after): List<SlotChange>
+}
+class ShoppingService {
+  - catalogue: Catalogue
+  + generate(plan: MealPlan): ShoppingList
+}
+class MealPlanBuilder {
+  - request: PlanRequest
+  - meals: List<MealEntry>
+  + {static} start(request: PlanRequest): MealPlanBuilder
+  + addMeal(day, slot, recipe, servings): MealPlanBuilder
+  + derivedFrom(planId): MealPlanBuilder
+  + build(): MealPlan
+}
+class MealPlan {
+  + deepCopy(): MealPlan
+  + getMeals(): List<MealEntry>
+}
+class Recipe {
+  + deepCopy(): Recipe
+}
+class "RecipeDocument\nSearchFilter\nProfileInput / PantryInput" as Inputs
+class "PlanDraft\nRecommendationDraft\nSubstitutionDraft" as DraftTypes <<new in Stage 2>>
+class "RecommendationList\nShoppingList" as Outputs
+class DomainException <<new in Stage 2>>
+
+RecipeService --> ConstraintValidator
+PlanService --> ConstraintValidator
+ConstraintValidator ..> ValidationResult
+RecipeService ..> Recipe : creates copies
+PlanService ..> MealPlanBuilder : directs
+MealPlanBuilder ..> MealPlan : builds
+PlanService ..> MealPlan : deep-copies (revise)
+ShoppingService ..> MealPlan : reads snapshots
+RecipeService ..> Inputs
+RecipeService ..> DraftTypes
+PlanService ..> DraftTypes
+RecipeService ..> Outputs
+ShoppingService ..> Outputs
+RecipeService ..> DomainException : throws
+PlanService ..> DomainException : throws
+@enduml

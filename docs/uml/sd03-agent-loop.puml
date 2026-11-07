@@ -1,0 +1,54 @@
+@startuml
+!include style.iuml
+skinparam sequenceMessageAlign center
+title SD03 (Stage 2) Bounded agent and tool interaction
+participant "facade:\nPlannerFacade" as F
+participant "agent:\nAgentCoordinator" as A
+participant "model: LLMClient\n(LoggingLLMClient)" as M
+participant "tools:\nToolRegistry" as T
+participant "scope:\nToolScope" as S
+participant "recipes / plans\nservices" as R
+
+F -> S : create(snapshot = state.deepCopy(), fixed PlanRequest / source plan)
+F -> A : run(task, taskPrompt, scope, outputSchema)
+A -> A : deadline = now + 90 s
+loop at most 5 nextStep() calls, until ready
+  A -> M : nextStep(context)
+  M --> A : ToolStep | FinalReady | Invalid
+  alt ToolStep with exactly one call
+    A -> T : execute(call, scope)
+    alt name not allowed for task, or arguments fail schema
+      T --> A : ToolResult(error) - nothing dispatched
+    else searchRecipes / listIngredients / readPlan / readProfile / readPantry
+      T -> R : search(snapshot, filter) / read snapshot
+      R --> T : data
+      T -> S : recordRetrieval(returned IDs)
+      T --> A : ToolResult(success, data)
+    else checkPlan
+      T -> R : PlanService.fromDraft(..) or revise(..)
+      R --> T : valid / problems
+      T --> A : ToolResult(valid, problems)
+    end
+    A -> A : append call + result to context; add step to trace
+  else ToolStep with several calls (batch)
+    A -> A : append error result for each call ("one tool per step")
+  else FinalReady
+    alt scope.hasRequiredRetrieval()
+      A -> A : ready = true
+    else nothing retrieved yet
+      A -> A : append Note("call searchRecipes / listIngredients first")
+    end
+  else Invalid (malformed call)
+    A -> A : append Note("retry with one valid tool call")
+  end
+end
+alt still nothing retrieved
+  A --> F : AgentException (no answer, nothing saved)
+else
+  A -> M : finish(context, outputSchema)   <i>6th call at most</i>
+  M --> A : AgentDraft (JSON) or LLMException
+  A --> F : AgentRun(draft, trusted retrieved IDs, trace, tokens)
+end
+F -> F : Drafts.status() schema check, then Java validation\n(RecipeService.recommendations / PlanService.fromDraft / revise / RecipeService.substitute)
+F --> F : Result(failure) or Proposal (saved only by accept())
+@enduml
