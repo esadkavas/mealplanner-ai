@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'mealplanner'
+version = '2.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // JSON persistence and LLM request/response handling
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.1'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.hamcrest:hamcrest-core:1.3'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-Xlint:unchecked'
+}
+
+application {
+    mainClass = 'mealplanner.app.Main'
+}
+
+// `./gradlew run --args="cli"` needs keyboard input for the interactive CLI.
+run {
+    standardInput = System.in
+}
+
+// Build one runnable jar that contains the dependencies:
+//   java -jar build/libs/mealplanner.jar gui|cli|llm-check
+jar {
+    archiveFileName = 'mealplanner.jar'
+    manifest {
+        attributes 'Main-Class': 'mealplanner.app.Main'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('.jar') }.collect { zipTree(it) }
+    }
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class'
+}
+
+test {
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+    }
+}

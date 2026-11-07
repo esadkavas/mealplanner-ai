@@ -1,0 +1,28 @@
+# ---- Local secrets (never commit) ----
+.env
+.env.*
+!.env.example
+config.local.json
+config.local.properties
+
+# ---- Local application data (created at runtime) ----
+data/
+*.lock
+
+# ---- Build output ----
+build/
+out/
+target/
+.gradle/
+bin/
+
+# ---- IDE / OS files ----
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.DS_Store
+Thumbs.db
+~$*
