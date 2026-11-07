@@ -1,0 +1,10 @@
+{
+  "title": "Mystery Stew",
+  "servings": 2,
+  "minutes": 30,
+  "ingredients": [
+    { "ingredientId": "dragon-fruit-powder", "quantity": 100 },
+    { "ingredientId": "rice", "quantity": -50 }
+  ],
+  "steps": ["Mix everything."]
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Lentil Spinach Soup",
+  "servings": 4,
+  "minutes": 30,
+  "ingredients": [
+    { "ingredientId": "lentils", "quantity": 200 },
+    { "ingredientId": "onion", "quantity": 1 },
+    { "ingredientId": "garlic", "quantity": 2 },
+    { "ingredientId": "spinach", "quantity": 100 },
+    { "ingredientId": "vegetable-broth", "quantity": 900 },
+    { "ingredientId": "lemon", "quantity": 0.5 },
+    { "ingredientId": "olive-oil", "quantity": 15 }
+  ],
+  "steps": [
+    "Soften the chopped onion and garlic in the olive oil.",
+    "Add the rinsed lentils and broth and simmer for 20 minutes.",
+    "Stir in the spinach until wilted and finish with lemon juice."
+  ]
+}
