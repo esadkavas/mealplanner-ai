@@ -156,6 +156,87 @@ public class RecipeService {
     public record Shortage(String ingredientId, BigDecimal required, BigDecimal available, BigDecimal missing) {
     }
 
+    // ---- F05 recommendations --------------------------------------------------------------------
+
+    /**
+     * Independently validates the agent's suggestions: each recipe must exist, be unique, have
+     * been retrieved through the tools, satisfy the saved profile and the constraints the model
+     * reported from the request. Any problem rejects the whole answer. Shortages are calculated
+     * here, not by the model.
+     */
+    public RecommendationList recommendations(RecommendationDraft draft, AppState state) {
+        List<String> problems = new ArrayList<>();
+        if (draft.maxMinutes() < 0 || draft.maxMinutes() > ConstraintValidator.MAX_MINUTES) {
+            problems.add("The AI reported an invalid time limit (" + draft.maxMinutes() + ").");
+        }
+        for (String id : concat(draft.mustIncludeIngredientIds(), draft.avoidIngredientIds())) {
+            if (!validator.catalogue().contains(id)) {
+                problems.add("The AI referred to unknown ingredient '" + id + "'.");
+            }
+        }
+        if (draft.items().size() > 5) {
+            problems.add("The AI returned more than five recommendations.");
+        }
+        List<RecommendationList.Recommendation> accepted = new ArrayList<>();
+        java.util.Set<UUID> seen = new java.util.HashSet<>();
+        for (RecommendationDraft.Item item : draft.items()) {
+            Recipe recipe = state.findRecipe(item.recipeRef()).orElse(null);
+            if (recipe == null) {
+                problems.add("The AI recommended '" + item.recipeRef() + "', which is not a stored recipe.");
+                continue;
+            }
+            String alias = state.recipeAlias(recipe.getId());
+            if (!seen.add(recipe.getId())) {
+                problems.add(alias + " was recommended twice.");
+                continue;
+            }
+            if (!draft.retrievedRecipeIds().contains(recipe.getId())) {
+                problems.add(alias + " was not retrieved through searchRecipes, so it cannot be recommended.");
+                continue;
+            }
+            ValidationResult check = validator.recipe(recipe, state.getProfile());
+            if (!check.isValid()) {
+                problems.addAll(check.allMessages());
+                continue;
+            }
+            if (draft.maxMinutes() > 0 && recipe.getMinutes() > draft.maxMinutes()) {
+                problems.add(alias + " takes " + recipe.getMinutes() + " minutes, over the requested " + draft.maxMinutes() + ".");
+            }
+            for (String id : draft.mustIncludeIngredientIds()) {
+                if (!recipe.usesIngredient(id)) {
+                    problems.add(alias + " does not contain requested ingredient " + id + ".");
+                }
+            }
+            for (String id : draft.avoidIngredientIds()) {
+                if (recipe.usesIngredient(id)) {
+                    problems.add(alias + " contains " + id + ", which the request rules out.");
+                }
+            }
+            accepted.add(new RecommendationList.Recommendation(alias, recipe, item.reason(), shortages(recipe, state)));
+        }
+        if (!problems.isEmpty()) {
+            throw new DomainException(problems);
+        }
+        List<String> constraintParts = new ArrayList<>();
+        if (draft.maxMinutes() > 0) {
+            constraintParts.add("max " + draft.maxMinutes() + " min");
+        }
+        if (!draft.mustIncludeIngredientIds().isEmpty()) {
+            constraintParts.add("must include " + String.join(", ", draft.mustIncludeIngredientIds()));
+        }
+        if (!draft.avoidIngredientIds().isEmpty()) {
+            constraintParts.add("avoid " + String.join(", ", draft.avoidIngredientIds()));
+        }
+        return new RecommendationList(accepted, draft.message(),
+                constraintParts.isEmpty() ? "none beyond your saved preferences" : String.join("; ", constraintParts), List.of());
+    }
+
+    private static List<String> concat(List<String> a, List<String> b) {
+        List<String> all = new ArrayList<>(a);
+        all.addAll(b);
+        return all;
+    }
+
     // ---- F09 scale ----------------------------------------------------------------------------
 
     /**

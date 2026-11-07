@@ -26,12 +26,13 @@ public final class Proposal {
     private final Recipe recipe;
     private final MealPlan plan;
     private final List<PlanService.SlotChange> changes;
+    private final List<String> agentTrace;
     private final ConstraintValidator validator;
     private final PlanService plans;
     private boolean consumed;
 
     Proposal(ProposalKind kind, long baseRevision, AppState candidate, String explanation, List<String> warnings,
-             Recipe recipe, MealPlan plan, List<PlanService.SlotChange> changes,
+             Recipe recipe, MealPlan plan, List<PlanService.SlotChange> changes, List<String> agentTrace,
              ConstraintValidator validator, PlanService plans) {
         this.kind = kind;
         this.baseRevision = baseRevision;
@@ -41,6 +42,7 @@ public final class Proposal {
         this.recipe = recipe;
         this.plan = plan;
         this.changes = changes == null ? List.of() : List.copyOf(changes);
+        this.agentTrace = agentTrace == null ? List.of() : List.copyOf(agentTrace);
         this.validator = validator;
         this.plans = plans;
     }
@@ -53,10 +55,7 @@ public final class Proposal {
     /** Re-checks the proposed object with the same rules used for the preview. */
     public ValidationResult validate(AppState state) {
         return switch (kind) {
-            case IMPORT_RECIPE, SCALE_RECIPE -> {
-                ValidationResult r = validator.recipe(recipe, null);
-                yield r;
-            }
+            case IMPORT_RECIPE, SCALE_RECIPE -> validator.recipe(recipe, null);
             case SUBSTITUTE_RECIPE -> validator.recipe(recipe, state.getProfile());
             case PLAN -> plans.validate(plan, state.getProfile());
         };
@@ -108,5 +107,10 @@ public final class Proposal {
     /** For plan revisions: the slots that changed. */
     public List<PlanService.SlotChange> changes() {
         return changes;
+    }
+
+    /** For AI proposals: the agent's steps (tools called and their outcomes). */
+    public List<String> agentTrace() {
+        return agentTrace;
     }
 }

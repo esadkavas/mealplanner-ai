@@ -12,9 +12,19 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import mealplanner.agent.AgentCoordinator;
+import mealplanner.agent.AgentException;
+import mealplanner.agent.AgentPrompts;
+import mealplanner.agent.AgentRun;
+import mealplanner.agent.Drafts;
+import mealplanner.agent.TaskType;
+import mealplanner.agent.ToolScope;
 import mealplanner.domain.AppState;
 import mealplanner.domain.Catalogue;
 import mealplanner.domain.MealPlan;
+import mealplanner.domain.PlanRequest;
 import mealplanner.domain.PreferenceProfile;
 import mealplanner.domain.Quantities;
 import mealplanner.domain.Recipe;
@@ -23,13 +33,16 @@ import mealplanner.persistence.StorageException;
 import mealplanner.service.ConstraintValidator;
 import mealplanner.service.DomainException;
 import mealplanner.service.PantryInput;
+import mealplanner.service.PlanDraft;
 import mealplanner.service.PlanService;
 import mealplanner.service.ProfileInput;
 import mealplanner.service.RecipeDocument;
 import mealplanner.service.RecipeService;
+import mealplanner.service.RecommendationList;
 import mealplanner.service.SearchFilter;
 import mealplanner.service.ShoppingList;
 import mealplanner.service.ShoppingService;
+import mealplanner.service.SubstitutionDraft;
 import mealplanner.service.ValidationResult;
 
 /**
@@ -42,22 +55,41 @@ import mealplanner.service.ValidationResult;
  */
 public class PlannerFacade {
 
+    /** Maximum length of a natural-language request (Stage 1: 2,000 characters). */
+    public static final int MAX_REQUEST_CHARS = 2000;
+
     private final ReentrantLock mutationLock = new ReentrantLock();
     private final StateStore store;
     private final ConstraintValidator validator;
     private final RecipeService recipes;
     private final PlanService plans;
     private final ShoppingService shopping;
+    private final AgentCoordinator agent;
+    private final String aiUnavailableReason;
     private volatile AppState state;
 
+    /** Facade without AI (deterministic features only). */
     public PlannerFacade(AppState initialState, StateStore store, ConstraintValidator validator,
                          RecipeService recipes, PlanService plans, ShoppingService shopping) {
+        this(initialState, store, validator, recipes, plans, shopping, null, "AI features are not configured.");
+    }
+
+    /**
+     * @param agent               the AI agent, or null if unavailable
+     * @param aiUnavailableReason why AI cannot be used (e.g. missing API key), or null if it can
+     */
+    public PlannerFacade(AppState initialState, StateStore store, ConstraintValidator validator,
+                         RecipeService recipes, PlanService plans, ShoppingService shopping,
+                         AgentCoordinator agent, String aiUnavailableReason) {
         this.state = initialState;
         this.store = store;
         this.validator = validator;
         this.recipes = recipes;
         this.plans = plans;
         this.shopping = shopping;
+        this.agent = agent;
+        this.aiUnavailableReason = agent == null && aiUnavailableReason == null
+                ? "AI features are not configured." : aiUnavailableReason;
     }
 
     // ---- read access ---------------------------------------------------------------------------
@@ -73,6 +105,15 @@ public class PlannerFacade {
 
     public ConstraintValidator validator() {
         return validator;
+    }
+
+    /** Null if AI features can be used, otherwise the reason they cannot (shown in the UI). */
+    public String aiUnavailableReason() {
+        return aiUnavailableReason;
+    }
+
+    public String aiDescription() {
+        return agent == null ? "AI unavailable" : agent.modelDescription();
     }
 
     /** True if the recipe satisfies the saved preferences (used for "ineligible" labels). */
@@ -164,6 +205,178 @@ public class PlannerFacade {
         } catch (DomainException e) {
             return Result.failure(e.messages());
         }
+    }
+
+    // ---- F05 recommend (hybrid) ------------------------------------------------------------------
+
+    /** Read-only: the agent searches and ranks; Java validates and computes shortages. */
+    public Result<RecommendationList> recommend(String request) {
+        String text = request == null ? "" : request.trim();
+        Result<RecommendationList> blocked = checkAiRequest(text, true);
+        if (blocked != null) {
+            return blocked;
+        }
+        AppState snapshot = state.deepCopy();
+        if (plans.eligibleRecipes(snapshot).isEmpty()) {
+            return Result.failure("No stored recipe fits your current preferences, so there is nothing to recommend.");
+        }
+        AgentRun run = null;
+        try {
+            JsonNode schema = AgentPrompts.recommendSchema();
+            run = agent.run(TaskType.RECOMMEND, AgentPrompts.recommend(text), ToolScope.recommend(snapshot), schema);
+            Drafts.Status status = Drafts.status(run, schema);
+            if (status != Drafts.Status.OK) {
+                return Result.failure(List.of(statusMessage(status, Drafts.message(run))), run.trace());
+            }
+            RecommendationList list = recipes.recommendations(Drafts.recommendation(run), snapshot);
+            if (list.items().isEmpty()) {
+                return Result.failure(List.of(statusMessage(Drafts.Status.NO_MATCH, list.message())), run.trace());
+            }
+            return Result.success(list.withTrace(run.trace()), list.items().size() + " recommendation(s). Nothing was saved.");
+        } catch (AgentException e) {
+            return Result.failure(List.of(e.getMessage()), e.trace());
+        } catch (DomainException e) {
+            return Result.failure(e.messages(), run == null ? List.of() : run.trace());
+        }
+    }
+
+    // ---- F06 generate plan (hybrid) ----------------------------------------------------------------
+
+    /** The plan's shape is fixed by the request; the agent only chooses recipes. Saved only on accept. */
+    public Result<Proposal> createPlan(PlanRequest request, String wishes) {
+        String text = wishes == null ? "" : wishes.trim();
+        Result<Proposal> blocked = checkAiRequest(text, false);
+        if (blocked != null) {
+            return blocked;
+        }
+        ValidationResult requestCheck = plans.validateRequest(request);
+        if (!requestCheck.isStructurallyValid()) {
+            return Result.failure(requestCheck.structuralErrors());
+        }
+        AppState snapshot = state.deepCopy();
+        AgentRun run = null;
+        try {
+            plans.checkFeasible(snapshot, request);
+            JsonNode schema = AgentPrompts.planSchema();
+            run = agent.run(TaskType.PLAN, AgentPrompts.plan(request, text), ToolScope.plan(snapshot, request), schema);
+            Drafts.Status status = Drafts.status(run, schema);
+            if (status != Drafts.Status.OK) {
+                return Result.failure(List.of(statusMessage(status, Drafts.message(run))), run.trace());
+            }
+            PlanDraft draft = Drafts.planEntries(run, "entries");
+            MealPlan plan = plans.fromDraft(draft, snapshot, request);
+            return planPreview(plan, List.of(), snapshot, draft.explanation(), run.trace());
+        } catch (AgentException e) {
+            return Result.failure(List.of(e.getMessage()), e.trace());
+        } catch (DomainException e) {
+            return Result.failure(e.messages(), run == null ? List.of() : run.trace());
+        }
+    }
+
+    // ---- F07 revise plan (hybrid) ------------------------------------------------------------------
+
+    /** Revises a copy of a saved plan; accepted revisions are saved under a new plan ID. */
+    public Result<Proposal> revisePlan(String planRef, String request) {
+        String text = request == null ? "" : request.trim();
+        Result<Proposal> blocked = checkAiRequest(text, true);
+        if (blocked != null) {
+            return blocked;
+        }
+        AppState snapshot = state.deepCopy();
+        MealPlan source = snapshot.findPlan(planRef).orElse(null);
+        if (source == null) {
+            return Result.failure("No plan '" + planRef + "'. Use an alias such as P01 or a plan ID.");
+        }
+        AgentRun run = null;
+        try {
+            JsonNode schema = AgentPrompts.reviseSchema();
+            run = agent.run(TaskType.REVISE, AgentPrompts.revise(snapshot, source, text), ToolScope.revise(snapshot, source), schema);
+            Drafts.Status status = Drafts.status(run, schema);
+            if (status != Drafts.Status.OK) {
+                return Result.failure(List.of(statusMessage(status, Drafts.message(run))), run.trace());
+            }
+            PlanDraft draft = Drafts.planEntries(run, "replacements");
+            MealPlan revised = plans.revise(source, draft, snapshot);
+            return planPreview(revised, plans.diff(source, revised), snapshot, draft.explanation(), run.trace());
+        } catch (AgentException e) {
+            return Result.failure(List.of(e.getMessage()), e.trace());
+        } catch (DomainException e) {
+            return Result.failure(e.messages(), run == null ? List.of() : run.trace());
+        }
+    }
+
+    // ---- F08 substitute (hybrid) -------------------------------------------------------------------
+
+    /** The agent proposes a replacement; Java applies it to a copy and validates the full variant. */
+    public Result<Proposal> substitute(String recipeRef, String ingredientId, String request) {
+        String text = request == null ? "" : request.trim();
+        Result<Proposal> blocked = checkAiRequest(text, true);
+        if (blocked != null) {
+            return blocked;
+        }
+        AppState snapshot = state.deepCopy();
+        Recipe source = snapshot.findRecipe(recipeRef).orElse(null);
+        if (source == null) {
+            return Result.failure("No recipe '" + recipeRef + "'. Use an alias such as R01 or a recipe ID.");
+        }
+        String selected = ingredientId == null ? "" : ingredientId.trim().toLowerCase(java.util.Locale.ROOT);
+        if (!source.usesIngredient(selected)) {
+            return Result.failure("'" + source.getTitle() + "' does not use '" + selected + "'.");
+        }
+        AgentRun run = null;
+        try {
+            JsonNode schema = AgentPrompts.substituteSchema();
+            run = agent.run(TaskType.SUBSTITUTE, AgentPrompts.substitute(snapshot, source, selected, text, catalogue()),
+                    ToolScope.substitute(snapshot), schema);
+            Drafts.Status status = Drafts.status(run, schema);
+            if (status != Drafts.Status.OK) {
+                return Result.failure(List.of(statusMessage(status, Drafts.message(run))), run.trace());
+            }
+            SubstitutionDraft draft = Drafts.substitution(run, selected);
+            Recipe variant = recipes.substitute(source, draft, snapshot.getProfile());
+            AppState candidate = snapshot.deepCopy();
+            candidate.addRecipe(variant.deepCopy());
+            Proposal proposal = new Proposal(ProposalKind.SUBSTITUTE_RECIPE, snapshot.getRevision(), candidate,
+                    draft.explanation(), List.of("AI suggestion: check that the result suits the dish before cooking."),
+                    variant, null, null, run.trace(), validator, plans);
+            return Result.success(proposal, "Preview ready. Accept to save it as a new recipe; the original is unchanged.");
+        } catch (AgentException e) {
+            return Result.failure(List.of(e.getMessage()), e.trace());
+        } catch (DomainException e) {
+            return Result.failure(e.messages(), run == null ? List.of() : run.trace());
+        }
+    }
+
+    private <T> Result<T> checkAiRequest(String text, boolean required) {
+        if (agent == null || aiUnavailableReason != null) {
+            return Result.failure(aiUnavailableReason == null ? "AI features are not configured." : aiUnavailableReason);
+        }
+        if (required && text.isEmpty()) {
+            return Result.failure("Please describe what you want.");
+        }
+        if (text.length() > MAX_REQUEST_CHARS) {
+            return Result.failure("Requests are limited to " + MAX_REQUEST_CHARS + " characters.");
+        }
+        return null;
+    }
+
+    private static String statusMessage(Drafts.Status status, String message) {
+        String detail = message == null || message.isBlank() ? "" : " " + message;
+        return switch (status) {
+            case NO_MATCH -> "No suitable stored recipe was found." + detail;
+            case NEEDS_CLARIFICATION -> "The assistant needs clarification:" + detail + " Please revise the request and try again.";
+            case UNSUPPORTED -> "This request is not supported:" + detail;
+            case OK -> detail.trim();
+        };
+    }
+
+    private Result<Proposal> planPreview(MealPlan plan, List<PlanService.SlotChange> changes, AppState base,
+                                         String explanation, List<String> trace) {
+        AppState candidate = base.deepCopy();
+        candidate.addPlan(plan.deepCopy());
+        Proposal proposal = new Proposal(ProposalKind.PLAN, base.getRevision(), candidate, explanation, List.of(),
+                null, plan, changes, trace, validator, plans);
+        return Result.success(proposal, "Preview ready. Accept to save it as a new plan, or reject.");
     }
 
     // ---- F09 scale -------------------------------------------------------------------------------
@@ -260,7 +473,7 @@ public class PlannerFacade {
         AppState candidate = current.deepCopy();
         candidate.addRecipe(recipe.deepCopy());
         Proposal proposal = new Proposal(kind, current.getRevision(), candidate, explanation, warnings,
-                recipe, null, null, validator, plans);
+                recipe, null, null, List.of(), validator, plans);
         return Result.success(proposal, "Preview ready. Accept to save it as a new recipe, or reject.");
     }
 
