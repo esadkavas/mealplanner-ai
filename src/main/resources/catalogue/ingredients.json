@@ -1,0 +1,485 @@
+[
+ {
+  "id": "rice",
+  "name": "Rice",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "pasta",
+  "name": "Pasta (dry)",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "oats",
+  "name": "Rolled oats",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "bread",
+  "name": "Bread slice",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "flour",
+  "name": "Flour",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "lentils",
+  "name": "Red lentils",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "chickpeas",
+  "name": "Chickpeas (cooked)",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "black-beans",
+  "name": "Black beans (cooked)",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "tofu",
+  "name": "Tofu",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "egg",
+  "name": "Egg",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN"
+  ]
+ },
+ {
+  "id": "milk",
+  "name": "Milk",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN"
+  ]
+ },
+ {
+  "id": "soy-milk",
+  "name": "Soy milk",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "oat-milk",
+  "name": "Oat milk",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "butter",
+  "name": "Butter",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN"
+  ]
+ },
+ {
+  "id": "vegan-butter",
+  "name": "Plant-based butter",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "olive-oil",
+  "name": "Olive oil",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "cheddar",
+  "name": "Cheddar cheese",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN"
+  ]
+ },
+ {
+  "id": "parmesan",
+  "name": "Parmesan",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN"
+  ]
+ },
+ {
+  "id": "yogurt",
+  "name": "Plain yogurt",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN"
+  ]
+ },
+ {
+  "id": "coconut-yogurt",
+  "name": "Coconut yogurt",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "chicken",
+  "name": "Chicken breast",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED"
+  ]
+ },
+ {
+  "id": "beef",
+  "name": "Ground beef",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED"
+  ]
+ },
+ {
+  "id": "salmon",
+  "name": "Salmon fillet",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED"
+  ]
+ },
+ {
+  "id": "tuna",
+  "name": "Canned tuna",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED"
+  ]
+ },
+ {
+  "id": "onion",
+  "name": "Onion",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "garlic",
+  "name": "Garlic clove",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "tomato",
+  "name": "Tomato",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "canned-tomato",
+  "name": "Canned tomatoes",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "carrot",
+  "name": "Carrot",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "potato",
+  "name": "Potato",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "spinach",
+  "name": "Spinach",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "bell-pepper",
+  "name": "Bell pepper",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "broccoli",
+  "name": "Broccoli",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "mushroom",
+  "name": "Mushrooms",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "lemon",
+  "name": "Lemon",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "banana",
+  "name": "Banana",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "berries",
+  "name": "Mixed berries",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "peanut",
+  "name": "Peanuts",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "peanut-butter",
+  "name": "Peanut butter",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "honey",
+  "name": "Honey",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN"
+  ]
+ },
+ {
+  "id": "maple-syrup",
+  "name": "Maple syrup",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "vegetable-broth",
+  "name": "Vegetable broth",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "chicken-broth",
+  "name": "Chicken broth",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED"
+  ]
+ },
+ {
+  "id": "coconut-milk",
+  "name": "Coconut milk",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "curry-powder",
+  "name": "Curry powder",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "cumin",
+  "name": "Ground cumin",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "tortilla",
+  "name": "Flour tortilla",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "avocado",
+  "name": "Avocado",
+  "unit": "COUNT",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "soy-sauce",
+  "name": "Soy sauce",
+  "unit": "MILLILITRE",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ },
+ {
+  "id": "ginger",
+  "name": "Fresh ginger",
+  "unit": "GRAM",
+  "dietTags": [
+   "UNRESTRICTED",
+   "VEGETARIAN",
+   "VEGAN"
+  ]
+ }
+]

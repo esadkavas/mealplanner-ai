@@ -1,0 +1,727 @@
+[
+ {
+  "title": "Red Lentil Soup",
+  "servings": 4,
+  "minutes": 35,
+  "ingredients": [
+   {
+    "ingredientId": "lentils",
+    "quantity": 250
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "carrot",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "canned-tomato",
+    "quantity": 400
+   },
+   {
+    "ingredientId": "vegetable-broth",
+    "quantity": 1000
+   },
+   {
+    "ingredientId": "cumin",
+    "quantity": 5
+   },
+   {
+    "ingredientId": "olive-oil",
+    "quantity": 15
+   }
+  ],
+  "steps": [
+   "Soften the chopped onion, carrot and garlic in the olive oil for 5 minutes.",
+   "Add the cumin, rinsed lentils, tomatoes and broth.",
+   "Simmer for 25 minutes until the lentils break down, then blend lightly."
+  ]
+ },
+ {
+  "title": "Chickpea Coconut Curry",
+  "servings": 4,
+  "minutes": 30,
+  "ingredients": [
+   {
+    "ingredientId": "chickpeas",
+    "quantity": 480
+   },
+   {
+    "ingredientId": "coconut-milk",
+    "quantity": 400
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 3
+   },
+   {
+    "ingredientId": "ginger",
+    "quantity": 10
+   },
+   {
+    "ingredientId": "curry-powder",
+    "quantity": 10
+   },
+   {
+    "ingredientId": "canned-tomato",
+    "quantity": 400
+   },
+   {
+    "ingredientId": "rice",
+    "quantity": 300
+   }
+  ],
+  "steps": [
+   "Cook the rice according to the package.",
+   "Fry the onion, garlic and ginger until soft, then stir in the curry powder.",
+   "Add the tomatoes, coconut milk and chickpeas and simmer for 15 minutes.",
+   "Serve the curry over the rice."
+  ]
+ },
+ {
+  "title": "Overnight Oats",
+  "servings": 1,
+  "minutes": 5,
+  "ingredients": [
+   {
+    "ingredientId": "oats",
+    "quantity": 50
+   },
+   {
+    "ingredientId": "milk",
+    "quantity": 120
+   },
+   {
+    "ingredientId": "yogurt",
+    "quantity": 60
+   },
+   {
+    "ingredientId": "berries",
+    "quantity": 75
+   },
+   {
+    "ingredientId": "honey",
+    "quantity": 10
+   }
+  ],
+  "steps": [
+   "Stir the oats, milk and yogurt together in a jar.",
+   "Top with berries and honey, cover and refrigerate overnight."
+  ]
+ },
+ {
+  "title": "Peanut Butter Banana Toast",
+  "servings": 1,
+  "minutes": 5,
+  "ingredients": [
+   {
+    "ingredientId": "bread",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "peanut-butter",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "banana",
+    "quantity": 1
+   }
+  ],
+  "steps": [
+   "Toast the bread.",
+   "Spread with peanut butter and top with sliced banana."
+  ]
+ },
+ {
+  "title": "Vegetable Omelette",
+  "servings": 1,
+  "minutes": 15,
+  "ingredients": [
+   {
+    "ingredientId": "egg",
+    "quantity": 3
+   },
+   {
+    "ingredientId": "spinach",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "bell-pepper",
+    "quantity": 0.5
+   },
+   {
+    "ingredientId": "cheddar",
+    "quantity": 20
+   },
+   {
+    "ingredientId": "butter",
+    "quantity": 5
+   }
+  ],
+  "steps": [
+   "Whisk the eggs.",
+   "Cook the chopped pepper and spinach in the butter for 2 minutes.",
+   "Pour in the eggs, sprinkle with cheese and fold when set."
+  ]
+ },
+ {
+  "title": "Spinach Mushroom Pasta",
+  "servings": 2,
+  "minutes": 25,
+  "ingredients": [
+   {
+    "ingredientId": "pasta",
+    "quantity": 200
+   },
+   {
+    "ingredientId": "mushroom",
+    "quantity": 200
+   },
+   {
+    "ingredientId": "spinach",
+    "quantity": 100
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "parmesan",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "olive-oil",
+    "quantity": 20
+   }
+  ],
+  "steps": [
+   "Boil the pasta until al dente.",
+   "Fry the sliced mushrooms and garlic in olive oil, then wilt in the spinach.",
+   "Toss with the pasta and parmesan."
+  ]
+ },
+ {
+  "title": "Tofu Broccoli Stir-Fry",
+  "servings": 2,
+  "minutes": 25,
+  "ingredients": [
+   {
+    "ingredientId": "tofu",
+    "quantity": 300
+   },
+   {
+    "ingredientId": "broccoli",
+    "quantity": 200
+   },
+   {
+    "ingredientId": "bell-pepper",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "soy-sauce",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "ginger",
+    "quantity": 10
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "rice",
+    "quantity": 150
+   }
+  ],
+  "steps": [
+   "Cook the rice.",
+   "Brown the cubed tofu in a hot pan.",
+   "Add the broccoli, pepper, garlic and ginger and stir-fry for 5 minutes.",
+   "Add the soy sauce and serve over rice."
+  ]
+ },
+ {
+  "title": "Chicken Rice Bowl",
+  "servings": 2,
+  "minutes": 35,
+  "ingredients": [
+   {
+    "ingredientId": "chicken",
+    "quantity": 300
+   },
+   {
+    "ingredientId": "rice",
+    "quantity": 150
+   },
+   {
+    "ingredientId": "broccoli",
+    "quantity": 150
+   },
+   {
+    "ingredientId": "soy-sauce",
+    "quantity": 20
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 2
+   }
+  ],
+  "steps": [
+   "Cook the rice.",
+   "Pan-fry the sliced chicken with garlic until cooked through.",
+   "Steam the broccoli, then assemble the bowls and drizzle with soy sauce."
+  ]
+ },
+ {
+  "title": "Lemon Garlic Salmon with Potatoes",
+  "servings": 2,
+  "minutes": 40,
+  "ingredients": [
+   {
+    "ingredientId": "salmon",
+    "quantity": 300
+   },
+   {
+    "ingredientId": "potato",
+    "quantity": 4
+   },
+   {
+    "ingredientId": "lemon",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 3
+   },
+   {
+    "ingredientId": "olive-oil",
+    "quantity": 20
+   }
+  ],
+  "steps": [
+   "Roast the cubed potatoes with half the oil at 220 C for 20 minutes.",
+   "Add the salmon, garlic, lemon slices and remaining oil to the tray.",
+   "Roast 12 more minutes until the salmon flakes."
+  ]
+ },
+ {
+  "title": "Beef Tacos",
+  "servings": 4,
+  "minutes": 25,
+  "ingredients": [
+   {
+    "ingredientId": "beef",
+    "quantity": 450
+   },
+   {
+    "ingredientId": "tortilla",
+    "quantity": 8
+   },
+   {
+    "ingredientId": "tomato",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "cheddar",
+    "quantity": 100
+   },
+   {
+    "ingredientId": "cumin",
+    "quantity": 5
+   }
+  ],
+  "steps": [
+   "Brown the beef with the chopped onion and cumin.",
+   "Warm the tortillas.",
+   "Fill with beef, diced tomato and cheese."
+  ]
+ },
+ {
+  "title": "Black Bean Tacos",
+  "servings": 4,
+  "minutes": 20,
+  "ingredients": [
+   {
+    "ingredientId": "black-beans",
+    "quantity": 480
+   },
+   {
+    "ingredientId": "tortilla",
+    "quantity": 8
+   },
+   {
+    "ingredientId": "avocado",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "tomato",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "cumin",
+    "quantity": 5
+   },
+   {
+    "ingredientId": "lemon",
+    "quantity": 1
+   }
+  ],
+  "steps": [
+   "Warm the black beans with the cumin and half the onion.",
+   "Mash the avocado with lemon juice.",
+   "Fill the warm tortillas with beans, avocado, tomato and remaining onion."
+  ]
+ },
+ {
+  "title": "Tuna Salad Sandwich",
+  "servings": 2,
+  "minutes": 10,
+  "ingredients": [
+   {
+    "ingredientId": "tuna",
+    "quantity": 160
+   },
+   {
+    "ingredientId": "bread",
+    "quantity": 4
+   },
+   {
+    "ingredientId": "yogurt",
+    "quantity": 40
+   },
+   {
+    "ingredientId": "lemon",
+    "quantity": 0.5
+   },
+   {
+    "ingredientId": "tomato",
+    "quantity": 1
+   }
+  ],
+  "steps": [
+   "Mix the drained tuna with yogurt and lemon juice.",
+   "Spread on bread, add tomato slices and close the sandwiches."
+  ]
+ },
+ {
+  "title": "Fluffy Pancakes",
+  "servings": 4,
+  "minutes": 20,
+  "ingredients": [
+   {
+    "ingredientId": "flour",
+    "quantity": 200
+   },
+   {
+    "ingredientId": "milk",
+    "quantity": 300
+   },
+   {
+    "ingredientId": "egg",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "butter",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "maple-syrup",
+    "quantity": 60
+   }
+  ],
+  "steps": [
+   "Whisk the flour, milk, eggs and half the melted butter into a batter.",
+   "Cook ladlefuls in a buttered pan until bubbles form, then flip.",
+   "Serve with maple syrup."
+  ]
+ },
+ {
+  "title": "Berry Yogurt Parfait",
+  "servings": 1,
+  "minutes": 5,
+  "ingredients": [
+   {
+    "ingredientId": "yogurt",
+    "quantity": 200
+   },
+   {
+    "ingredientId": "berries",
+    "quantity": 100
+   },
+   {
+    "ingredientId": "oats",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "honey",
+    "quantity": 10
+   }
+  ],
+  "steps": [
+   "Layer yogurt, berries and oats in a glass.",
+   "Drizzle with honey."
+  ]
+ },
+ {
+  "title": "Mushroom Risotto",
+  "servings": 4,
+  "minutes": 45,
+  "ingredients": [
+   {
+    "ingredientId": "rice",
+    "quantity": 300
+   },
+   {
+    "ingredientId": "mushroom",
+    "quantity": 300
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "vegetable-broth",
+    "quantity": 1000
+   },
+   {
+    "ingredientId": "butter",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "parmesan",
+    "quantity": 50
+   }
+  ],
+  "steps": [
+   "Soften the onion and mushrooms in half the butter.",
+   "Stir in the rice, then add hot broth a ladle at a time, stirring, for about 25 minutes.",
+   "Finish with the remaining butter and parmesan."
+  ]
+ },
+ {
+  "title": "Chicken Vegetable Soup",
+  "servings": 4,
+  "minutes": 60,
+  "ingredients": [
+   {
+    "ingredientId": "chicken",
+    "quantity": 400
+   },
+   {
+    "ingredientId": "chicken-broth",
+    "quantity": 1500
+   },
+   {
+    "ingredientId": "carrot",
+    "quantity": 3
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "potato",
+    "quantity": 2
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 2
+   }
+  ],
+  "steps": [
+   "Simmer the chicken in the broth for 20 minutes, then shred it.",
+   "Add the chopped vegetables and garlic and simmer 25 minutes.",
+   "Return the chicken to the pot and season."
+  ]
+ },
+ {
+  "title": "Vegan Buddha Bowl",
+  "servings": 2,
+  "minutes": 30,
+  "ingredients": [
+   {
+    "ingredientId": "chickpeas",
+    "quantity": 240
+   },
+   {
+    "ingredientId": "rice",
+    "quantity": 150
+   },
+   {
+    "ingredientId": "spinach",
+    "quantity": 60
+   },
+   {
+    "ingredientId": "avocado",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "carrot",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "lemon",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "olive-oil",
+    "quantity": 15
+   }
+  ],
+  "steps": [
+   "Cook the rice.",
+   "Roast the chickpeas with olive oil for 15 minutes.",
+   "Assemble bowls with rice, spinach, grated carrot, avocado and chickpeas; squeeze over lemon."
+  ]
+ },
+ {
+  "title": "Peanut Noodles",
+  "servings": 2,
+  "minutes": 20,
+  "ingredients": [
+   {
+    "ingredientId": "pasta",
+    "quantity": 200
+   },
+   {
+    "ingredientId": "peanut-butter",
+    "quantity": 60
+   },
+   {
+    "ingredientId": "soy-sauce",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "ginger",
+    "quantity": 5
+   },
+   {
+    "ingredientId": "peanut",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "bell-pepper",
+    "quantity": 1
+   }
+  ],
+  "steps": [
+   "Boil the pasta.",
+   "Whisk peanut butter, soy sauce, garlic, ginger and a little pasta water into a sauce.",
+   "Toss with the pasta and sliced pepper; top with chopped peanuts."
+  ]
+ },
+ {
+  "title": "Simple Tomato Pasta",
+  "servings": 2,
+  "minutes": 20,
+  "ingredients": [
+   {
+    "ingredientId": "pasta",
+    "quantity": 200
+   },
+   {
+    "ingredientId": "canned-tomato",
+    "quantity": 400
+   },
+   {
+    "ingredientId": "garlic",
+    "quantity": 3
+   },
+   {
+    "ingredientId": "olive-oil",
+    "quantity": 30
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 1
+   }
+  ],
+  "steps": [
+   "Boil the pasta.",
+   "Cook the onion and garlic in olive oil, add the tomatoes and simmer 10 minutes.",
+   "Toss the pasta with the sauce."
+  ]
+ },
+ {
+  "title": "Cheese and Bean Quesadillas",
+  "servings": 2,
+  "minutes": 15,
+  "ingredients": [
+   {
+    "ingredientId": "tortilla",
+    "quantity": 4
+   },
+   {
+    "ingredientId": "cheddar",
+    "quantity": 150
+   },
+   {
+    "ingredientId": "bell-pepper",
+    "quantity": 1
+   },
+   {
+    "ingredientId": "black-beans",
+    "quantity": 120
+   }
+  ],
+  "steps": [
+   "Fill two tortillas with cheese, beans and sliced pepper.",
+   "Top with the other tortillas and cook in a dry pan until crisp on both sides."
+  ]
+ },
+ {
+  "title": "Scrambled Tofu on Toast",
+  "servings": 2,
+  "minutes": 15,
+  "ingredients": [
+   {
+    "ingredientId": "tofu",
+    "quantity": 300
+   },
+   {
+    "ingredientId": "spinach",
+    "quantity": 60
+   },
+   {
+    "ingredientId": "onion",
+    "quantity": 0.5
+   },
+   {
+    "ingredientId": "olive-oil",
+    "quantity": 10
+   },
+   {
+    "ingredientId": "bread",
+    "quantity": 2
+   }
+  ],
+  "steps": [
+   "Fry the chopped onion in olive oil.",
+   "Crumble in the tofu and cook 5 minutes, then wilt in the spinach.",
+   "Serve on toast."
+  ]
+ }
+]
