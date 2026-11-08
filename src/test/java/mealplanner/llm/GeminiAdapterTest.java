@@ -74,6 +74,8 @@ public class GeminiAdapterTest {
         assertEquals(KEY, request.apiKeyHeader());
         JsonNode body = MAPPER.readTree(request.body());
         assertEquals("searchRecipes", body.at("/tools/0/functionDeclarations/0/name").asText());
+        assertEquals("OBJECT", body.at("/tools/0/functionDeclarations/0/parameters/type").asText());
+        assertEquals("STRING", body.at("/tools/0/functionDeclarations/0/parameters/properties/text/type").asText());
         assertEquals("AUTO", body.at("/toolConfig/functionCallingConfig/mode").asText());
         assertEquals("system rules", body.at("/systemInstruction/parts/0/text").asText());
         assertEquals("Find a quick vegan dinner.", body.at("/contents/0/parts/0/text").asText());
@@ -114,9 +116,20 @@ public class GeminiAdapterTest {
         assertEquals("OK", draft.json().path("status").asText());
         JsonNode body = MAPPER.readTree(server.received.get(0).body());
         assertEquals("application/json", body.at("/generationConfig/responseMimeType").asText());
-        assertEquals("object", body.at("/generationConfig/responseSchema/type").asText());
+        assertEquals("OBJECT", body.at("/generationConfig/responseSchema/type").asText());
         assertTrue(body.path("tools").isMissingNode());
         assertTrue(body.at("/contents/0/parts/0/text").asText().contains("Find a quick vegan dinner."));
+    }
+
+    @Test
+    public void nestedSchemasAreTranslatedWithoutChangingTheOriginal() {
+        JsonNode original = mealplanner.agent.AgentPrompts.planSchema();
+        JsonNode gemini = GeminiAdapter.toGeminiSchema(original);
+        assertEquals("ARRAY", gemini.at("/properties/entries/type").asText());
+        assertEquals("OBJECT", gemini.at("/properties/entries/items/type").asText());
+        assertEquals("INTEGER", gemini.at("/properties/entries/items/properties/day/type").asText());
+        assertEquals("BREAKFAST", gemini.at("/properties/entries/items/properties/slot/enum/0").asText());
+        assertEquals("object", original.path("type").asText());
     }
 
     @Test

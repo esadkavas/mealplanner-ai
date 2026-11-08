@@ -84,7 +84,7 @@ public class GeminiAdapter implements LLMClient {
             declaration.put("name", tool.name());
             declaration.put("description", tool.description());
             if (tool.parameters() != null && tool.parameters().path("properties").size() > 0) {
-                declaration.set("parameters", tool.parameters());
+                declaration.set("parameters", toGeminiSchema(tool.parameters()));
             }
         }
         body.putArray("tools").addObject().set("functionDeclarations", declarations);
@@ -127,7 +127,7 @@ public class GeminiAdapter implements LLMClient {
         contents.add(textContent("user", finishPrompt(context)));
         ObjectNode generation = body.putObject("generationConfig");
         generation.put("responseMimeType", "application/json");
-        generation.set("responseSchema", schema);
+        generation.set("responseSchema", toGeminiSchema(schema));
 
         JsonNode response = post(body, context);
         TokenUsage usage = usage(response);
@@ -185,6 +185,30 @@ public class GeminiAdapter implements LLMClient {
     }
 
     // ---- request building ------------------------------------------------------------------------
+
+    /**
+     * Translates the application's neutral JSON-Schema subset into Gemini's Schema object, whose
+     * "type" values are the uppercase OpenAPI names (OBJECT, ARRAY, STRING, INTEGER, NUMBER, BOOLEAN)
+     * used in Google's REST examples. The input is not modified.
+     */
+    static JsonNode toGeminiSchema(JsonNode schema) {
+        if (schema == null || !schema.isObject()) {
+            return schema;
+        }
+        ObjectNode copy = ((ObjectNode) schema).deepCopy();
+        if (copy.has("type") && copy.get("type").isTextual()) {
+            copy.put("type", copy.get("type").asText().toUpperCase(Locale.ROOT));
+        }
+        if (copy.has("items")) {
+            copy.set("items", toGeminiSchema(copy.get("items")));
+        }
+        if (copy.has("properties") && copy.get("properties").isObject()) {
+            ObjectNode properties = MAPPER.createObjectNode();
+            copy.get("properties").fields().forEachRemaining(e -> properties.set(e.getKey(), toGeminiSchema(e.getValue())));
+            copy.set("properties", properties);
+        }
+        return copy;
+    }
 
     private ArrayNode contents(AgentContext context) throws LLMException {
         ArrayNode contents = MAPPER.createArrayNode();
