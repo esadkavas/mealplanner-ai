@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,12 +43,18 @@ import mealplanner.agent.ToolSpec;
  *   <li>finish() sends the whole tool transcript as text with no tools, asking for JSON that
  *       follows a response schema (structured output).</li>
  * </ul>
- * The API key travels only in the {@code x-goog-api-key} header, never in URLs or logs.
+ * The API key travels only in the {@code x-goog-api-key} header, never in URLs or logs. On HTTP 429
+ * (per-minute quota) it waits once for the provider's suggested delay, if that fits in the overall
+ * time limit, and retries the same request.
  */
 public class GeminiAdapter implements LLMClient {
 
     public static final String DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    /** Longest provider-suggested wait that is honoured before retrying once after HTTP 429. */
+    static final Duration MAX_RATE_LIMIT_WAIT = Duration.ofSeconds(30);
+    static final Duration DEFAULT_RATE_LIMIT_WAIT = Duration.ofSeconds(10);
+    private static final Duration MIN_TIME_AFTER_WAIT = Duration.ofSeconds(5);
 
     private final String apiKey;
     private final String modelId;
@@ -286,6 +293,32 @@ public class GeminiAdapter implements LLMClient {
             throw new LLMException(LLMException.Kind.NOT_CONFIGURED,
                     "AI features need a Gemini API key. Copy .env.example to .env and set GEMINI_API_KEY.");
         }
+        HttpResponse<String> response = send(body, context);
+        if (response.statusCode() == 429) {
+            // Free-tier quotas are per minute. Wait once for the delay Google suggests (if it fits in
+            // the overall time limit) and retry the same request; otherwise report the rate limit.
+            Duration wait = retryDelay(response.body()).orElse(DEFAULT_RATE_LIMIT_WAIT);
+            if (wait.compareTo(MAX_RATE_LIMIT_WAIT) <= 0
+                    && context.remaining().compareTo(wait.plus(MIN_TIME_AFTER_WAIT)) > 0) {
+                sleep(wait);
+                response = send(body, context);
+                if (response.statusCode() == 429) {
+                    throw new LLMException(LLMException.Kind.RATE_LIMITED, "The Gemini rate limit or free quota was "
+                            + "exceeded (HTTP 429), even after waiting " + wait.toSeconds() + " seconds. Wait a minute and try again.");
+                }
+            }
+        }
+        if (response.statusCode() / 100 != 2) {
+            throw httpError(response.statusCode(), response.body());
+        }
+        try {
+            return MAPPER.readTree(response.body());
+        } catch (JsonProcessingException e) {
+            throw new LLMException(LLMException.Kind.FORMAT, "The AI provider returned a response that is not JSON.", e);
+        }
+    }
+
+    private HttpResponse<String> send(ObjectNode body, AgentContext context) throws LLMException {
         Duration timeout = callTimeout;
         Duration remaining = context.remaining();
         if (remaining.isNegative() || remaining.isZero()) {
@@ -301,9 +334,8 @@ public class GeminiAdapter implements LLMClient {
                 .header("x-goog-api-key", apiKey)
                 .POST(HttpRequest.BodyPublishers.ofString(body.toString(), StandardCharsets.UTF_8))
                 .build();
-        HttpResponse<String> response;
         try {
-            response = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            return http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         } catch (HttpTimeoutException e) {
             throw new LLMException(LLMException.Kind.TIMEOUT,
                     "The AI provider did not answer within " + timeout.toSeconds() + " seconds.", e);
@@ -314,13 +346,30 @@ public class GeminiAdapter implements LLMClient {
             Thread.currentThread().interrupt();
             throw new LLMException(LLMException.Kind.UNAVAILABLE, "The AI request was cancelled.", e);
         }
-        if (response.statusCode() / 100 != 2) {
-            throw httpError(response.statusCode(), response.body());
-        }
+    }
+
+    /** Reads google.rpc.RetryInfo.retryDelay (e.g. "23s" or "1.5s") from a 429 error body. */
+    static Optional<Duration> retryDelay(String body) {
         try {
-            return MAPPER.readTree(response.body());
-        } catch (JsonProcessingException e) {
-            throw new LLMException(LLMException.Kind.FORMAT, "The AI provider returned a response that is not JSON.", e);
+            for (JsonNode detail : MAPPER.readTree(body).path("error").path("details")) {
+                String delay = detail.path("retryDelay").asText("");
+                if (delay.endsWith("s")) {
+                    double seconds = Double.parseDouble(delay.substring(0, delay.length() - 1));
+                    return Optional.of(Duration.ofMillis(Math.max(0, Math.round(seconds * 1000))));
+                }
+            }
+        } catch (JsonProcessingException | IllegalArgumentException | NullPointerException e) {
+            // no usable delay; the caller falls back to the default wait
+        }
+        return Optional.empty();
+    }
+
+    private static void sleep(Duration wait) throws LLMException {
+        try {
+            Thread.sleep(wait.toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new LLMException(LLMException.Kind.UNAVAILABLE, "The AI request was cancelled.", e);
         }
     }
 

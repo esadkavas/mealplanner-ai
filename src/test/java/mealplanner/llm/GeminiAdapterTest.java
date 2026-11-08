@@ -151,7 +151,7 @@ public class GeminiAdapterTest {
     public void httpErrorsMapToClearKinds() {
         server.reply(400, "{\"error\":{\"code\":400,\"message\":\"API key not valid. Please pass a valid API key.\","
                 + "\"status\":\"INVALID_ARGUMENT\",\"details\":[{\"reason\":\"API_KEY_INVALID\"}]}}")
-              .reply(429, "{\"error\":{\"code\":429,\"message\":\"Resource exhausted\"}}")
+              .reply(429, rateLimited("120s"))
               .reply(404, "{\"error\":{\"code\":404,\"message\":\"models/gemini-test is not found\"}}")
               .reply(503, "{}")
               .reply(400, "{\"error\":{\"code\":400,\"message\":\"Bad schema near " + KEY + "\"}}");
@@ -163,6 +163,43 @@ public class GeminiAdapterTest {
         LLMException bad = assertThrows(LLMException.class, () -> adapter.nextStep(context()));
         assertEquals(LLMException.Kind.BAD_REQUEST, bad.kind());
         assertFalse("the key must never appear in error messages", bad.getMessage().contains(KEY));
+    }
+
+    private static String rateLimited(String delay) {
+        return "{\"error\":{\"code\":429,\"message\":\"Resource exhausted\",\"status\":\"RESOURCE_EXHAUSTED\","
+                + "\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"" + delay + "\"}]}}";
+    }
+
+    @Test
+    public void rateLimitIsRetriedOnceAfterSuggestedDelay() throws Exception {
+        server.reply(429, rateLimited("1s")).reply(200, FakeGeminiServer.text("READY"));
+        long start = System.nanoTime();
+        AgentStep step = adapter(Duration.ofSeconds(5)).nextStep(context());
+        long waitedMillis = (System.nanoTime() - start) / 1_000_000;
+        assertTrue(step instanceof AgentStep.FinalReady);
+        assertEquals(2, server.received.size());
+        assertTrue("should wait about the suggested delay", waitedMillis >= 900);
+    }
+
+    @Test
+    public void rateLimitTwiceOrTooLongDelayIsReported() {
+        server.reply(429, rateLimited("1s")).reply(429, rateLimited("1s"));
+        LLMException twice = assertThrows(LLMException.class, () -> adapter(Duration.ofSeconds(5)).nextStep(context()));
+        assertEquals(LLMException.Kind.RATE_LIMITED, twice.kind());
+        assertTrue(twice.getMessage().contains("even after waiting"));
+
+        server.reply(429, rateLimited("120s"));
+        int before = server.received.size();
+        LLMException tooLong = assertThrows(LLMException.class, () -> adapter(Duration.ofSeconds(5)).nextStep(context()));
+        assertEquals(LLMException.Kind.RATE_LIMITED, tooLong.kind());
+        assertEquals("no retry when the suggested wait is too long", before + 1, server.received.size());
+    }
+
+    @Test
+    public void retryDelayIsParsedFromRetryInfo() {
+        assertEquals(Duration.ofMillis(23500), GeminiAdapter.retryDelay(rateLimited("23.5s")).orElseThrow());
+        assertTrue(GeminiAdapter.retryDelay("{}").isEmpty());
+        assertTrue(GeminiAdapter.retryDelay("not json").isEmpty());
     }
 
     @Test
