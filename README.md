@@ -6,7 +6,10 @@ meal plans, and suggest ingredient substitutions. Java code validates everything
 the AI suggests is saved until you accept it.
 
 - **Stage 1 design:** `MealPlanner_Stage1_Design.docx`
-- **Stage 2 implementation report:** `stage2-report.pdf`
+- **Stage 2 implementation report:** `stage2-report.pdf` (editable source: `stage2-report.docx`)
+- **Demonstration videos:** [Video 1, GUI](https://www.youtube.com/watch?v=vdxrwgh4E7E) and
+  [Video 2, CLI](https://www.youtube.com/watch?v=smNeY_iDtHs). The report's Section 7 lists a timestamped link for
+  each feature.
 
 ## Prerequisites
 
