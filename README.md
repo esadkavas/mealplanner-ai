@@ -56,8 +56,11 @@ Then test the connection. The check makes three tiny requests and never prints t
 java -jar build/libs/mealplanner.jar llm-check
 ```
 
-If a key is ever pushed by mistake, revoke it in AI Studio immediately and create a new one. Deleting the file
-does not remove it from Git history.
+If a key is ever pushed or shared by mistake, revoke it in AI Studio immediately and create a new one. Deleting
+the file does not remove it from Git history.
+
+On the free tier Google allows only a few requests per minute, and each AI action makes 4–6 model calls. If the
+app reports a rate limit (HTTP 429) after its automatic retry, wait a minute and try again.
 
 ## 3. Run
 

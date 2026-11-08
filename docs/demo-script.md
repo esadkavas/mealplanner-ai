@@ -28,6 +28,11 @@ each feature (for YouTube: `https://youtu.be/VIDEO_ID?t=95` starts at 1:35).
    Drive with **Anyone with the link → Viewer**. Then open each link in a private window to confirm it plays
    without signing in.
 6. AI steps take about 5–30 seconds. Keep the wait in the video (it shows the real call happening) or trim it.
+7. **Free-tier pacing:** each AI feature makes 4–6 model calls, and the free tier allows only a few calls per
+   minute. If Google answers "rate limit" (HTTP 429), the app waits once (up to 30 s) and retries
+   automatically. To keep the recording smooth, **pause about a minute between AI features** (narrate or show
+   a deterministic feature meanwhile). If a 429 message still appears, keep it in the video as an error-handling
+   example, wait a minute and repeat the step.
 
 For each segment, **say the feature ID and name first**, then what it does and whether AI is involved.
 
